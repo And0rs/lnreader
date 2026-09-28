@@ -29,6 +29,7 @@ import { ReaderSearchResult } from '../types';
 import { useTtsSession } from '../hooks/useTtsSession';
 import type { TtsSettings } from '@modules/nitro-tts';
 import { ChapterInfo } from '@database/types';
+import type { TouchZoneAction } from '@utils/reader/touchZones';
 import { Dialog } from '@components/Dialog';
 import { TextInput } from 'react-native-paper';
 import useCustomCode from './Hooks/useCustomCode';
@@ -48,6 +49,7 @@ export type WebViewPostEvent = {
 
 type WebViewReaderProps = {
   onPress(): void;
+  onTouchZoneAction(action: TouchZoneAction): void;
   onTouchStart?(): void;
   onSearchResult(result: ReaderSearchResult): void;
   searchTextRef: React.MutableRefObject<string>;
@@ -126,6 +128,7 @@ const assetsUriPrefix = __DEV__
 
 const WebViewReader: React.FC<WebViewReaderProps> = ({
   onPress,
+  onTouchZoneAction,
   onTouchStart,
   onSearchResult,
   searchTextRef,
@@ -266,9 +269,10 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
           break;
         }
         case CHAPTER_GENERAL_SETTINGS: {
-          const newGeneralSettings =
-            getMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS) ||
-            initialChapterGeneralSettings;
+          const newGeneralSettings = {
+            ...initialChapterGeneralSettings,
+            ...getMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS),
+          };
           webViewRef.current?.injectJavaScript(
             `reader.generalSettings.val = ${JSON.stringify(
               newGeneralSettings,
@@ -564,6 +568,11 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
             }
             case 'hide':
               onPress();
+              break;
+            case 'touch-zone-action':
+              if (typeof event.data === 'string') {
+                onTouchZoneAction(event.data as TouchZoneAction);
+              }
               break;
             case 'refresh':
               refetch();

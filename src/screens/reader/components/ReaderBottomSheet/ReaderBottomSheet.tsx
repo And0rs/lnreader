@@ -136,6 +136,11 @@ const navigationPreferences: GeneralPreference[] = [
     label: 'tapToScroll',
     description: 'tapToScrollDescription',
   },
+  {
+    key: 'touchZonesEnabled',
+    label: 'touchZones',
+    description: 'touchZonesDescription',
+  },
 ];
 
 const pagedModePreferences: GeneralPreference[] = [

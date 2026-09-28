@@ -31,6 +31,8 @@ import { Drawer } from 'react-native-drawer-layout';
 import { EMPTY_READER_SEARCH_RESULT, ReaderSearchResult } from './types';
 import * as Linking from 'expo-linking';
 import { resolveUrl } from '@services/plugin/fetch';
+import NativeReaderControls from '@modules/native-reader-controls';
+import type { TouchZoneAction } from '@utils/reader/touchZones';
 
 const Chapter = ({ route, navigation }: ChapterScreenProps) => (
   <ChapterContextProvider
@@ -260,6 +262,36 @@ export const ChapterContent = ({
     hideHeader();
   }, [hideHeader, onUserInteraction, searchVisible]);
 
+  const handleTouchZoneAction = useCallback(
+    (action: TouchZoneAction) => {
+      onUserInteraction();
+      switch (action) {
+        case 'controls':
+          handleReaderPress();
+          break;
+        case 'settings':
+          openReaderSheet();
+          break;
+        case 'chapters':
+          openDrawerI();
+          break;
+        case 'volumeUp':
+          NativeReaderControls?.adjustVolume(1);
+          break;
+        case 'volumeDown':
+          NativeReaderControls?.adjustVolume(-1);
+          break;
+        case 'brightnessUp':
+          NativeReaderControls?.adjustBrightness(1);
+          break;
+        case 'brightnessDown':
+          NativeReaderControls?.adjustBrightness(-1);
+          break;
+      }
+    },
+    [handleReaderPress, onUserInteraction, openDrawerI, openReaderSheet],
+  );
+
   const chapterUrl = resolveUrl(novel.pluginId, chapter.path);
   const openChapterInWebView = useCallback(() => {
     navigation.navigate('WebviewScreen', {
@@ -307,6 +339,7 @@ export const ChapterContent = ({
       ) : (
         <WebViewReader
           onPress={handleReaderPress}
+          onTouchZoneAction={handleTouchZoneAction}
           onTouchStart={handleReaderTouchStart}
           onSearchResult={setSearchResult}
           searchTextRef={searchTextRef}

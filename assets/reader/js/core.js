@@ -864,6 +864,79 @@ window.addEventListener('load', () => {
     if (Date.now() < pageReader.ignoreClickUntil) {
       return;
     }
+    if (reader.generalSettings.val.touchZonesEnabled) {
+      if (
+        e.defaultPrevented ||
+        e.target.closest(
+          'a, button, input, select, textarea, [contenteditable]',
+        ) ||
+        (window.getSelection()?.toString() ?? '').length > 0
+      ) {
+        return;
+      }
+      const settings = reader.generalSettings.val;
+      const layout = settings.touchZoneLayout === '2x3' ? '2x3' : '3x3';
+      const columns = layout === '2x3' ? 2 : 3;
+      const column = Math.min(
+        columns - 1,
+        Math.max(0, Math.floor((e.clientX / reader.layoutWidth) * columns)),
+      );
+      const row = Math.min(
+        2,
+        Math.max(0, Math.floor((e.clientY / reader.layoutHeight) * 3)),
+      );
+      const action =
+        settings.touchZoneActions?.[layout]?.[row * columns + column];
+      const move = (pages, stayInChapter = false) => {
+        onUserInteraction();
+        if (settings.pageReader) {
+          const destination = pageReader.page.val + pages;
+          pageReader.movePage(
+            stayInChapter
+              ? Math.max(
+                  0,
+                  Math.min(destination, pageReader.totalPages.val - 1),
+                )
+              : destination,
+          );
+        } else {
+          window.scrollBy({
+            top: reader.layoutHeight * 0.75 * pages,
+            behavior: 'auto',
+          });
+        }
+      };
+      switch (action) {
+        case 'previousPage':
+          move(-1);
+          break;
+        case 'nextPage':
+          move(1);
+          break;
+        case 'previousTenPages':
+          move(-10, true);
+          break;
+        case 'nextTenPages':
+          move(10, true);
+          break;
+        case 'previousChapter':
+          reader.post({ type: 'prev' });
+          break;
+        case 'nextChapter':
+          reader.post({ type: 'next' });
+          break;
+        case 'controls':
+        case 'settings':
+        case 'chapters':
+        case 'volumeUp':
+        case 'volumeDown':
+        case 'brightnessUp':
+        case 'brightnessDown':
+          reader.post({ type: 'touch-zone-action', data: action });
+          break;
+      }
+      return;
+    }
     const { clientX, clientY } = e;
     const { x, y } = {
       x: clientX / reader.layoutWidth,

@@ -7,6 +7,7 @@ import { useTheme, useChapterGeneralSettings } from '@hooks/persisted';
 import { getString } from '@i18n/translations';
 import { List, Button } from '@components/index';
 import SettingSwitch from '../../components/SettingSwitch';
+import TouchZoneSettings from './TouchZoneSettings';
 
 const NavigationTab: React.FC = () => {
   const theme = useTheme();
@@ -38,6 +39,7 @@ const NavigationTab: React.FC = () => {
     >
       <View style={styles.section}>
         <List.SubHeader theme={theme}>Navigation Controls</List.SubHeader>
+        <TouchZoneSettings />
         <SettingSwitch
           label={getString('readerScreen.bottomSheet.volumeButtonsScroll')}
           description={getString(

@@ -9,6 +9,11 @@ import { useMMKVObject } from 'react-native-mmkv';
 import { useEffect, useMemo } from 'react';
 import { getMMKVObject } from '@utils/mmkv/mmkv';
 import type { DateFormat } from '@utils/dateFormat';
+import {
+  defaultTouchZoneActions,
+  TouchZoneActions,
+  TouchZoneLayout,
+} from '@utils/reader/touchZones';
 import type {
   AutomaticBackupInterval,
   AutomaticLibraryUpdateInterval,
@@ -196,6 +201,9 @@ export interface ChapterGeneralSettings {
   TTSEnable: boolean;
   pageReaderInvertVolumeButtons: boolean;
   pageReaderDisableAnimation: boolean;
+  touchZonesEnabled: boolean;
+  touchZoneLayout: TouchZoneLayout;
+  touchZoneActions: TouchZoneActions;
 }
 
 export interface ReaderTheme {
@@ -323,6 +331,9 @@ export const initialChapterGeneralSettings: ChapterGeneralSettings = {
   TTSEnable: true,
   pageReaderInvertVolumeButtons: false,
   pageReaderDisableAnimation: false,
+  touchZonesEnabled: false,
+  touchZoneLayout: '3x3',
+  touchZoneActions: defaultTouchZoneActions,
 };
 
 export const initialChapterReaderSettings: ChapterReaderSettings = {
@@ -413,9 +424,14 @@ export const useChapterGeneralSettings = () => {
     useMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS);
 
   const setChapterGeneralSettings = (values: Partial<ChapterGeneralSettings>) =>
-    setSettings({ ...chapterGeneralSettings, ...values });
+    setSettings({
+      ...initialChapterGeneralSettings,
+      ...chapterGeneralSettings,
+      ...values,
+    });
 
   return {
+    ...initialChapterGeneralSettings,
     ...chapterGeneralSettings,
     setChapterGeneralSettings,
   };
